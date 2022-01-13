@@ -1,0 +1,39 @@
+{
+    "env": {
+        "browser": false,
+        "es2021": true
+    },
+    "extends": [
+        "plugin:@shopify/typescript",
+        "plugin:@shopify/typescript-type-checking",
+        "plugin:@shopify/node",
+        "plugin:@shopify/prettier"
+    ],
+    "parser": "@typescript-eslint/parser",
+    "parserOptions": {
+        "ecmaVersion": 13,
+        "sourceType": "module",
+        "project": [
+            "./tsconfig.json"
+        ]
+    },
+    "overrides": [
+        {
+            "files": [
+                "src/**/*.{ts,tsx}"
+            ],
+            "extends": [
+                "plugin:@shopify/typescript-type-checking"
+            ],
+            "parserOptions": {
+                "project": "./tsconfig.json"
+            },
+            "rules": {
+                "@typescript-eslint/no-unnecessary-condition": "off"
+            }
+        }
+    ],
+    "plugins": [
+        "@typescript-eslint"
+    ]
+}
