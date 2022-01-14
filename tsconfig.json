@@ -1,6 +1,7 @@
 {
-  "extends": "fastify-tsconfig",
   "compilerOptions": {
+    "target": "ES2021",
+    "module": "CommonJS",
     "experimentalDecorators": true, /* Enable experimental support for TC39 stage 2 draft decorators. */
     "emitDecoratorMetadata": true, /* Emit design-type metadata for decorated declarations in source files. */
     "esModuleInterop": true, /* Emit additional JavaScript to ease support for importing CommonJS modules. This enables `allowSyntheticDefaultImports` for type compatibility. */

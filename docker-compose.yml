@@ -1,0 +1,18 @@
+version: '3.7'
+
+services:
+  api:
+    build: .
+    env_file: .env
+    restart: on-failure:5
+    ports: 
+      - 7464:7464
+    volumes:
+      - ./:/usr/src/app/
+    entrypoint: ["ts-node", "src/server.ts"]
+networks:
+  default:
+    ipam:
+      config:
+        - subnet: 10.35.14.0/24
+      driver: default
