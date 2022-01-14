@@ -1,6 +1,6 @@
 import tap from 'tap';
 
-import {testBuild} from '../test/helper';
+import {testBuild} from './helper';
 
 tap.test('requests the "/" route', async (t: any) => {
   const app = await testBuild(t);

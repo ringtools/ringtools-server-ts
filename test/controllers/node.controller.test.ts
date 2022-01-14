@@ -1,6 +1,6 @@
 import tap from 'tap';
 
-import {testBuild} from '../../test/helper';
+import {testBuild} from '../helper';
 
 tap.test('Too short pubkeys should return 404', async (t: any) => {
   t.plan(1);
