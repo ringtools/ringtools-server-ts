@@ -3,6 +3,10 @@ import * as https from 'https';
 import axios from 'axios';
 import {Subject} from 'rxjs';
 import WebSocket from 'ws';
+import {Initializer, Service} from 'fastify-decorators';
+import dotenv from 'dotenv';
+
+dotenv.config();
 
 const httpsAgent = new https.Agent({
   rejectUnauthorized: false,
@@ -21,13 +25,24 @@ interface GraphUpdateResult {
   };
 }
 
+/**
+ * Responsible for connecting to LND in several ways
+ */
+@Service()
 export class LndService {
-  ws: WebSocket;
+  ws!: WebSocket;
   channelUpdateSubject: Subject<any> = new Subject();
   nodeUpdateSubject: Subject<any> = new Subject();
   closedChannelSubject: Subject<any> = new Subject();
+  lndRestApiUrl!: string;
+  macaroon!: string;
 
-  constructor(protected lndRestApiUrl: string, protected macaroon: string) {
+  constructor() {}
+
+  @Initializer()
+  init() {
+    this.lndRestApiUrl = process.env.LND_REST_API || 'localhost:8080';
+    this.macaroon = process.env.MACAROON || '';
     this.ws = new WebSocket(
       `wss://${this.lndRestApiUrl}/v1/graph/subscribe?method=GET`,
       {

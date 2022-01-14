@@ -35,5 +35,6 @@
     ],
     "plugins": [
         "@typescript-eslint"
-    ]
+    ],
+    "ignorePatterns": "test/**/*.ts"
 }
