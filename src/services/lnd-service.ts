@@ -8,8 +8,14 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
+const decodedTlsCert = Buffer.from(
+  process.env.TLS_CERT_BASE64 || '',
+  'base64',
+).toString('ascii');
+
 const httpsAgent = new https.Agent({
-  rejectUnauthorized: false,
+  rejectUnauthorized: Boolean(process.env.REJECT_UNAUTHORIZED) || true,
+  ca: decodedTlsCert,
 });
 
 axios.defaults.httpsAgent = httpsAgent;
@@ -46,8 +52,8 @@ export class LndService {
     this.ws = new WebSocket(
       `wss://${this.lndRestApiUrl}/v1/graph/subscribe?method=GET`,
       {
-        // Work-around for self-signed certificates.
-        rejectUnauthorized: false,
+        rejectUnauthorized: Boolean(process.env.REJECT_UNAUTHORIZED) || true,
+        ca: decodedTlsCert,
         headers: {
           'Grpc-Metadata-Macaroon': this.macaroon,
         },
