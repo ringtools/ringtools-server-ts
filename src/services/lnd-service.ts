@@ -59,6 +59,8 @@ export class LndService {
         },
       },
     );
+
+    this.run();
   }
 
   run() {

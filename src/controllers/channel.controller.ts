@@ -37,7 +37,9 @@ export default class ChannelController {
               .to([chanInfo.node1_pub, chanInfo.node2_pub])
               .emit('channel', chanInfo);
           })
-          .catch(() => {});
+          .catch(() => {
+            console.log('Error sending channel update');
+          });
       }
     });
   }
@@ -60,13 +62,23 @@ export default class ChannelController {
       'connection',
       (socket: Socket<DefaultEventsMap, DefaultEventsMap>) => {
         socket.on('subscribe', (data) => {
-          socket.join(data);
-          this.lndService
-            .getChannel(data)
-            .then((nodeInfo) => {
-              socket.emit('channel', nodeInfo);
-            })
-            .catch(() => {});
+          let channels;
+          if (Array.isArray(data)) {
+            channels = data;
+          } else {
+            channels = [data];
+          }
+
+          for (const ch of channels) {
+            if (socket.rooms.has(ch)) continue;
+            socket.join(ch);
+            this.lndService
+              .getChannel(ch)
+              .then((nodeInfo) => {
+                socket.emit('channel', nodeInfo);
+              })
+              .catch(() => {});
+          }
         });
         socket.on('unsubscribe_all', (_data) => {
           for (const room of socket.rooms) {
