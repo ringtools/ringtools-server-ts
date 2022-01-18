@@ -8,7 +8,6 @@ dotenv.config();
 const server = build({
   logger: {
     level: 'warn',
-    prettyPrint: true,
   },
 });
 
