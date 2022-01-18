@@ -21,14 +21,16 @@ const build = (opts = {}) => {
     .register(fastifyStatic, {
       root: path.join(__dirname, '../public'),
     })
-    .register(socketioServer)
+    .register(fastifyCors)
+    .register(socketioServer, {
+      cors: {
+        origin: true,
+      },
+    })
     .register(fastifySensible)
     .register(bootstrap, {
       directory: resolve(__dirname, 'controllers'),
       mask: /\.controller\./,
-    })
-    .register(fastifyCors, {
-      origin: '*',
     });
 
   return app;
