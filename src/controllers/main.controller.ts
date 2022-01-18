@@ -1,7 +1,8 @@
-import {FastifyInstance} from 'fastify';
+import {FastifyInstance, FastifyReply, FastifyRequest} from 'fastify';
 import {
   Controller,
   FastifyInstanceToken,
+  GET,
   Hook,
   Inject,
 } from 'fastify-decorators';
@@ -22,6 +23,19 @@ export default class MainController {
 
   @Inject(LndService)
   private readonly lndService!: LndService;
+
+  /**
+   * Register routes for frontend and redirect to index.html
+   * @param request
+   * @param reply
+   */
+  @GET('overview')
+  @GET('visual')
+  @GET('ring-only')
+  @GET('settings')
+  redirectToIndex(request: FastifyRequest<any>, reply: FastifyReply<any>) {
+    reply.sendFile('index.html');
+  }
 
   @Hook('onReady')
   registerWsHandlers() {
