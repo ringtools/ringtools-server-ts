@@ -1,18 +1,14 @@
-import tap from 'tap';
+import {testBuild} from '../helper';
 
-import {testBuild} from '../../test/helper';
+describe('main controller tests', () => {
+  const app = testBuild();
 
-tap.test('Main controller should do nothing', async (t: any) => {
-  t.plan(1);
+  test('Main controller should do nothing', async () => {
+    const response = await app.inject({
+      url: '/',
+      method: 'GET',
+    });
 
-  const app = await testBuild(t);
-
-  const response = await app.inject({
-    url: '/',
-    method: 'GET',
+    expect(response.statusCode).toBe(404);
   });
-
-  t.equal(response.statusCode, 404, 'returns a status code of 404');
-
-  t.teardown(() => app.close());
 });

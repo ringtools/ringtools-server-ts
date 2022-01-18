@@ -1,4 +1,5 @@
 import * as https from 'https';
+import {existsSync, readFileSync} from 'fs';
 
 import axios from 'axios';
 import {Subject} from 'rxjs';
@@ -8,14 +9,39 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
-const decodedTlsCert = Buffer.from(
-  process.env.TLS_CERT_BASE64 || '',
-  'base64',
-).toString('ascii');
+let tlsCertData: string;
+let macaroonData: string;
+let rejectUnauthorized = true;
+
+// Check if files exists, otherwise try to read base64 data
+if (existsSync(process.env.MACAROON_FILE)) {
+  macaroonData = readFileSync(process.env.MACAROON_FILE).toString('hex');
+} else {
+  macaroonData = process.env.MACAROON || '';
+}
+
+if (existsSync(process.env.TLS_CERT_FILE)) {
+  tlsCertData = readFileSync(process.env.TLS_CERT_FILE).toString('ascii');
+} else {
+  const tlsCertData = Buffer.from(
+    process.env.TLS_CERT_BASE64 || '',
+    'base64',
+  ).toString('ascii');
+}
+
+if (tlsCertData === '' || macaroonData === '') {
+  throw new Error(
+    'TLS Certificate or Macaroon could not be loaded, this is required to run ringtools-ts-server',
+  );
+}
+
+if (process.env.REJECT_UNAUTHORIZED) {
+  rejectUnauthorized = Boolean(Number(process.env.REJECT_UNAUTHORIZED));
+}
 
 const httpsAgent = new https.Agent({
-  rejectUnauthorized: Boolean(process.env.REJECT_UNAUTHORIZED) || true,
-  ca: decodedTlsCert,
+  rejectUnauthorized,
+  ca: tlsCertData,
 });
 
 axios.defaults.httpsAgent = httpsAgent;
@@ -40,20 +66,24 @@ export class LndService {
   channelUpdateSubject: Subject<any> = new Subject();
   nodeUpdateSubject: Subject<any> = new Subject();
   closedChannelSubject: Subject<any> = new Subject();
+  lndRestApiWsUrl!: string;
   lndRestApiUrl!: string;
+
   macaroon!: string;
 
   constructor() {}
 
   @Initializer()
   init() {
-    this.lndRestApiUrl = process.env.LND_REST_API || 'localhost:8080';
-    this.macaroon = process.env.MACAROON || '';
+    this.lndRestApiWsUrl = process.env.LND_REST_API_WS || 'ws://localhost:8080';
+    this.lndRestApiUrl = process.env.LND_REST_API || 'http://localhost:8080';
+
+    this.macaroon = macaroonData;
     this.ws = new WebSocket(
-      `wss://${this.lndRestApiUrl}/v1/graph/subscribe?method=GET`,
+      `${this.lndRestApiWsUrl}/v1/graph/subscribe?method=GET`,
       {
-        rejectUnauthorized: Boolean(process.env.REJECT_UNAUTHORIZED) || true,
-        ca: decodedTlsCert,
+        rejectUnauthorized,
+        ca: tlsCertData,
         headers: {
           'Grpc-Metadata-Macaroon': this.macaroon,
         },
@@ -99,7 +129,7 @@ export class LndService {
   }
 
   private doLndGet(endPoint: string) {
-    return axios.get(`https://${this.lndRestApiUrl}/${endPoint}`, {
+    return axios.get(`${this.lndRestApiUrl}/${endPoint}`, {
       responseType: 'json',
 
       headers: {

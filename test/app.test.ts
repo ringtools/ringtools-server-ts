@@ -1,13 +1,14 @@
-import tap from 'tap';
-
 import {testBuild} from './helper';
 
-tap.test('requests the "/" route', async (t: any) => {
-  const app = await testBuild(t);
 
-  const response = await app.inject({
-    method: 'GET',
-    url: '/',
+describe('app tests', () => {
+  const app = testBuild();
+
+  test('requests the "/" route', async () => {
+    const res = await app.inject({
+      method: 'GET',
+      url: '/',
+    });
+    expect(res.statusCode).toBe(404);
   });
-  t.equal(response.statusCode, 200, 'returns a status code of 200');
 });

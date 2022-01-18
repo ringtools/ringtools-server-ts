@@ -38,7 +38,7 @@ export default class ChannelController {
               .emit('channel', chanInfo);
           })
           .catch(() => {
-            console.log('Error sending channel update');
+            console.log(`Error sending channel update for ${channel.chan_id}`);
           });
       }
     });

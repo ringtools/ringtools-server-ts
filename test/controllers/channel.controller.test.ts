@@ -1,18 +1,14 @@
-import tap from 'tap';
+import {testBuild} from '../helper';
 
-import {testBuild} from '../../test/helper';
+describe('channel controller tests', () => {
+  const app = testBuild();
 
-tap.test('Non-numeric channels should return 404', async (t: any) => {
-  t.plan(1);
+  test('Non-numeric channels should return 404', async () => {
+    const response = await app.inject({
+      url: '/channel/abcdefg',
+      method: 'GET',
+    });
 
-  const app = await testBuild(t);
-
-  const response = await app.inject({
-    url: '/channel/abcdefg',
-    method: 'GET',
+    expect(response.statusCode).toEqual(404);
   });
-
-  t.equal(response.statusCode, 404, 'returns a status code of 404');
-
-  t.teardown(() => app.close());
 });
