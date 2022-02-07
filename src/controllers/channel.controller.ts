@@ -51,7 +51,12 @@ export default class ChannelController {
   ) {
     if (isNaN(Number(request.params.channelId))) return reply.notFound();
 
-    return this.lndService.getChannel(request.params.channelId);
+    try {
+      return await this.lndService.getChannel(request.params.channelId);
+    } 
+    catch {
+      return reply.notFound();
+    }
   }
 
   @Hook('onReady')

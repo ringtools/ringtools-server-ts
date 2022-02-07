@@ -40,7 +40,11 @@ export default class NodeController {
   async getNode(request: FastifyRequest<any>, reply: FastifyReply<any>) {
     if (request.params.pubKey.length !== 66) return reply.notFound();
 
-    return this.lndService.getNode(request.params.pubKey);
+    try {
+      return await this.lndService.getNode(request.params.pubKey);
+    } catch {
+      return reply.notFound();
+    }
   }
 
   @Hook('onReady')
