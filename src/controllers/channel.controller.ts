@@ -53,8 +53,7 @@ export default class ChannelController {
 
     try {
       return await this.lndService.getChannel(request.params.channelId);
-    } 
-    catch {
+    } catch {
       return reply.notFound();
     }
   }

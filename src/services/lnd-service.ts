@@ -1,6 +1,7 @@
 import * as https from 'https';
 import {existsSync, readFileSync} from 'fs';
 
+import {SocksProxyAgent} from 'socks-proxy-agent';
 import axios from 'axios';
 import {Subject} from 'rxjs';
 import WebSocket from 'ws';
@@ -23,7 +24,7 @@ if (existsSync(process.env.MACAROON_FILE)) {
 if (existsSync(process.env.TLS_CERT_FILE)) {
   tlsCertData = readFileSync(process.env.TLS_CERT_FILE).toString('ascii');
 } else {
-  const tlsCertData = Buffer.from(
+  tlsCertData = Buffer.from(
     process.env.TLS_CERT_BASE64 || '',
     'base64',
   ).toString('ascii');
@@ -39,20 +40,37 @@ if (process.env.REJECT_UNAUTHORIZED) {
   rejectUnauthorized = Boolean(Number(process.env.REJECT_UNAUTHORIZED));
 }
 
-const httpsAgent = new https.Agent({
-  rejectUnauthorized,
-  ca: tlsCertData,
-});
+let httpsAgent;
 
+if (process.env.USE_SOCKS_PROXY === '1') {
+  httpsAgent = new SocksProxyAgent({
+    host: process.env.SOCKS_PROXY_HOST || undefined,
+    hostname: process.env.SOCKS_PROXY_HOST || undefined,
+    port: process.env.SOCKS_PROXY_PORT || undefined,
+    tls: {
+      rejectUnauthorized: false,
+      checkServerIdentity: () => undefined,
+    },
+  });
+} else {
+  httpsAgent = new https.Agent({
+    rejectUnauthorized,
+    ca: tlsCertData,
+  });
+}
+
+axios.defaults.httpAgent = httpsAgent;
 axios.defaults.httpsAgent = httpsAgent;
 
 interface GraphUpdateResult {
-  result: {
-    // eslint-disable-next-line @typescript-eslint/naming-convention
+  error?: {
+    code: number;
+    message?: string;
+    details: any;
+  };
+  result?: {
     node_updates: [];
-    // eslint-disable-next-line @typescript-eslint/naming-convention
     channel_updates: [];
-    // eslint-disable-next-line @typescript-eslint/naming-convention
     closed_chans: [];
   };
 }
@@ -82,6 +100,7 @@ export class LndService {
     this.ws = new WebSocket(
       `${this.lndRestApiWsUrl}/v1/graph/subscribe?method=GET`,
       {
+        agent: httpsAgent,
         rejectUnauthorized,
         ca: tlsCertData,
         headers: {
@@ -100,9 +119,13 @@ export class LndService {
     this.ws.on('error', (err: Error) => {
       console.log(`Error: ${err}`);
     });
-    this.ws.on('ping', (event: Buffer) => {});
+    this.ws.on('ping', (_event: Buffer) => {});
     this.ws.on('message', (event: WebSocket.RawData) => {
       const data: GraphUpdateResult = JSON.parse(event.toString());
+      if (data.error) {
+        console.log(data.error);
+        return;
+      }
 
       if (data.result.node_updates.length) {
         this.nodeUpdateSubject.next(data.result.node_updates);
