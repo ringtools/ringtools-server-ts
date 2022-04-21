@@ -151,10 +151,33 @@ export class LndService {
     return (await this.doLndGet(`v1/graph/edge/${channelId}`)).data;
   }
 
+  public async getInvoice(
+    value: number,
+    memo: string,
+    expiry = 3600,
+  ) {
+    const response = await this.doLndPost('v1/invoices', {
+      value,
+      memo,
+      expiry,
+    });
+
+    return response.data;
+  }
+
   private doLndGet(endPoint: string) {
     return axios.get(`${this.lndRestApiUrl}/${endPoint}`, {
       responseType: 'json',
 
+      headers: {
+        'Grpc-Metadata-Macaroon': this.macaroon,
+      },
+    });
+  }
+
+  private doLndPost(endPoint: string, data: any) {
+    return axios.post(`${this.lndRestApiUrl}/${endPoint}`, data, {
+      responseType: 'json',
       headers: {
         'Grpc-Metadata-Macaroon': this.macaroon,
       },

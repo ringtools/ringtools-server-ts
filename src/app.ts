@@ -10,6 +10,7 @@ import fastifySensible from 'fastify-sensible';
 import fastifyHelmet from 'fastify-helmet';
 import fastifyCors from 'fastify-cors';
 import fastifyStatic from 'fastify-static';
+import fastifyRateLimit from 'fastify-rate-limit';
 
 dotenv.config();
 
@@ -17,6 +18,11 @@ const build = (opts = {}) => {
   const app = fastify(opts);
 
   app
+    .register(fastifyRateLimit, {
+      max: 100,
+      allowList: ['127.0.0.1'],
+      timeWindow: 5000,
+    })
     .register(fastifyHelmet, {contentSecurityPolicy: false})
     .register(fastifyStatic, {
       root: path.join(__dirname, '../public'),
