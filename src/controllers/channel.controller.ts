@@ -53,8 +53,16 @@ export default class ChannelController {
 
     try {
       return await this.lndService.getChannel(request.params.channelId);
-    } catch {
-      return reply.notFound();
+    } catch(e) {
+      if (e.response && e.response.data.code === 2) {
+        return reply.notFound();
+      } else {
+        let msg;
+        if (e.errno && e.errno === -3008) {
+          msg = "Backend can not be reached";
+        }
+        return reply.internalServerError(msg);
+      }
     }
   }
 

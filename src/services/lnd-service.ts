@@ -117,7 +117,8 @@ export class LndService {
       this.ws.send('{}');
     });
     this.ws.on('error', (err: Error) => {
-      console.log(`Error: ${err}`);
+      console.log(err);
+      console.log(`WS Error: ${err}`);
     });
     this.ws.on('ping', (_event: Buffer) => {});
     this.ws.on('message', (event: WebSocket.RawData) => {

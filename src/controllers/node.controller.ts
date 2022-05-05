@@ -42,8 +42,16 @@ export default class NodeController {
 
     try {
       return await this.lndService.getNode(request.params.pubKey);
-    } catch {
-      return reply.notFound();
+    } catch(e) {
+      if (e.response && e.response.data.code === 5) {
+        return reply.notFound();
+      } else {
+        let msg;
+        if (e.errno && e.errno === -3008) {
+          msg = "Backend can not be reached";
+        }
+        return reply.internalServerError(msg);
+      }
     }
   }
 
