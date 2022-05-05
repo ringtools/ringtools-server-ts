@@ -6,11 +6,11 @@ import dotenv from 'dotenv';
 import fastify from 'fastify';
 import socketioServer from 'fastify-socket.io';
 import {bootstrap} from 'fastify-decorators';
-import fastifySensible from 'fastify-sensible';
-import fastifyHelmet from 'fastify-helmet';
-import fastifyCors from 'fastify-cors';
-import fastifyStatic from 'fastify-static';
-import fastifyRateLimit from 'fastify-rate-limit';
+import fastifySensible from '@fastify/sensible';
+import fastifyHelmet from '@fastify/helmet';
+import fastifyCors from '@fastify/cors';
+import fastifyStatic from '@fastify/static';
+import fastifyRateLimit from '@fastify/rate-limit';
 
 dotenv.config();
 
