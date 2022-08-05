@@ -75,6 +75,8 @@ interface GraphUpdateResult {
   };
 }
 
+let initalized = false
+
 /**
  * Responsible for connecting to LND in several ways
  */
@@ -93,6 +95,10 @@ export class LndService {
 
   @Initializer()
   init() {
+    if (initalized)
+      return
+
+    initalized = true
     this.lndRestApiWsUrl = process.env.LND_REST_API_WS || 'ws://localhost:8080';
     this.lndRestApiUrl = process.env.LND_REST_API || 'http://localhost:8080';
 
